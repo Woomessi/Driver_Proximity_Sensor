@@ -2,29 +2,26 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
+  * @brief          : Main program body of the driver for the proximity sensor
   ******************************************************************************
   * @attention
+  * Author【作者】: Hongrui Wu【吴宏瑞】
   *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
+  * Department【机构】: Xin Wang's Lab in HITSZ
   *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
+  * Date【日期】: 2022/11/5/21:30
   ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "main.h"//包含引脚自定义名称等文件
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "vl6180x_api.h" //官方API
-#include "bsp_i2c.h" //软件I2C1
-#include "bsp_i2c2.h" //软件I2C2
-#include "tca9535.h" //tca9535拓展器
+#include "bsp_i2c.h" //包含软件I2C1底层驱动
+#include "vl6180x_api.h" //包含TOF传感器VL6180X官方API库（基于I2C1）
+#include "bsp_i2c2.h" //包含软件I2C2底层驱动
+#include "tca9535.h" //包含TCA9535端口拓展器底层驱动（基于I2C2）
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,14 +39,16 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define DEVICE_NUMBER 16 //传感器数量
+
+#define DEVICE_NUMBER 16 //定义TOF传感器数量
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart1; //串口1句柄，用于配置串口1的参数
 
 /* USER CODE BEGIN PV */
-/* 用于printf的条件编译 */
+
+/* 在CubeIDE使用printf函数必须配置的条件编译 */
 #ifdef __GNUC__
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 #else
@@ -76,15 +75,15 @@ GETCHAR_PROTOTYPE
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_USART1_UART_Init(void);
+void SystemClock_Config(void); //配置时钟树，本芯片使用内部高速时钟源HSI
+static void MX_GPIO_Init(void); //GPIO端口的初始化与配置
+static void MX_USART1_UART_Init(void); //串口1的初始化与配置
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-struct MyDev_t Devs[DEVICE_NUMBER];
+struct MyDev_t Devs[DEVICE_NUMBER]; //使用Devs结构体数组保存各TOF传感器的信息（I2C设备地址）
 /* USER CODE END 0 */
 
 /**
@@ -100,56 +99,58 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+  HAL_Init(); //初始化HAL库
 
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  SystemClock_Config();
+  SystemClock_Config(); //初始化时钟树
 
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_USART1_UART_Init();
+  MX_GPIO_Init(); //初始化GPIO端口
+  MX_USART1_UART_Init();//初始化串口1
   /* USER CODE BEGIN 2 */
-  SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
+  /*基于TCA9535端口扩展器，拉低VL6180X的GPIO0端口，复位所有的TOF传感器，使其设备地址恢复为初始地址0x52*/
+  TCA9535_WrByte(EXPANDER_ADDRESS, TCA9535_CONFIG_PORT0_REG, 0x00);//设置TCA9535端口扩展器Port0为输出模式
+  TCA9535_WrByte(EXPANDER_ADDRESS, TCA9535_CONFIG_PORT1_REG, 0x00);//设置TCA9535端口扩展器Port1为输出模式
 
-//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12 | GPIO_PIN_13, 0);//复位所有的传感器
-  I2C2_WrByte(EXPANDER_ADDRESS, TCA9535_CONFIG_PORT0_REG, 0x00);//将PORT0设置为输出模式
-  I2C2_WrByte(EXPANDER_ADDRESS, TCA9535_CONFIG_PORT1_REG, 0x00);//将PORT1设置为输出模式
-  I2C2_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT0_REG, 0x00);//复位PORT0
-  I2C2_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT1_REG, 0x00);//复位PORT1
+  TCA9535_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT0_REG, 0x00);//复位TCA9535端口扩展器Port0所有引脚
+  TCA9535_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT1_REG, 0x00);//复位TCA9535端口扩展器Port1所有引脚
 
   int i, id, FinalI2cAddr, status, enabled_port0_pin, enabled_port1_pin;
-  id = 0;//赋初值
-  enabled_port0_pin = 0x00;
-  enabled_port1_pin = 0x00;
-//  uint16_t GPIO_index[DEVICE_NUMBER] = {GPIO_PIN_12, GPIO_PIN_13};//保存要使能的GPIO端口
+//  id = 0;//给id赋初值，保证其地址的正确
+  enabled_port0_pin = 0x00;//表达Port0中要置位的8个引脚，向其8位二进制数中某一位写1，以置位相应引脚
+  enabled_port1_pin = 0x00;//表达Port1中要置位的8个引脚，向其8位二进制数中某一位写1，以置位相应引脚
+
   //逐一更新各传感器的地址
   for (i = 0; i <= DEVICE_NUMBER - 1; i++)
   {
-//    HAL_GPIO_WritePin(GPIOB, GPIO_index[i], 1);//使能当前传感器
-	if(i < 8)
+	if(i < 8)//当前端口为Port0
 	{
+		/*
+		 * 从Port0第一个引脚P00开始，逐一置位下一个引脚，并保持上一个引脚的置位。
+		 * enabled_port0_pin二进制值与要置位的引脚的关系为2*enabled_port0_pin+1
+		 */
 		enabled_port0_pin = 2*enabled_port0_pin + 1;
-        I2C2_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT0_REG, enabled_port0_pin);//使能当前传感器
+		TCA9535_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT0_REG, enabled_port0_pin);//向相应寄存器写入enabled_port0_pin，使能当前TOF传感器
 	}
-	else
+	else//当前端口为Port1,其它操作同Port0
 	{
 		enabled_port1_pin = 2*enabled_port1_pin + 1;
-	    I2C2_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT1_REG, enabled_port1_pin);//使能当前传感器
+		TCA9535_WrByte(EXPANDER_ADDRESS, TCA9535_OUTPUT_PORT1_REG, enabled_port1_pin);
 	}
-    HAL_Delay(2);
-    Devs[i].i2c_dev_addr = 0x52;//刚刚使能的传感器，访问地址仍为默认地址0x52
-    FinalI2cAddr = 0x52 + ((i + 1) * 2);//获取修改后的地址
-    status = VL6180x_SetI2CAddress(&Devs[i], FinalI2cAddr); //将修改后的地址写入传感器相关寄存器
+    HAL_Delay(2);//延时以保证使能成功
+    Devs[i].i2c_dev_addr = 0x52;//刚刚使能的TOF传感器，保存访问地址为默认地址0x52
+    FinalI2cAddr = 0x52 + ((i + 1) * 2);//获取修改后的地址（独一无二，不同于0x52）
+    status = VL6180x_SetI2CAddress(&Devs[i], FinalI2cAddr); //将修改后的地址写入TOF传感器保存设备地址的寄存器
     Devs[i].i2c_dev_addr = FinalI2cAddr;//记录修改后的地址
-    status = VL6180x_RdByte(&Devs[i], IDENTIFICATION_MODEL_ID, &id);//测试I2C读值是否正常
+//    status = VL6180x_RdByte(&Devs[i], IDENTIFICATION_MODEL_ID, &id);//测试I2C读值是否正常
   }
   /* USER CODE END 2 */
 
@@ -158,40 +159,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	Sample_SimpleRanging();//测距函数
+	Sample_SimpleRanging();//TOF传感器VL6180X的测距函数
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
-void Sample_SimpleRanging(void)
-{
-  VL6180x_RangeData_t Range[DEVICE_NUMBER];
 
-  int i;
-  for (i = 0; i <= DEVICE_NUMBER - 1; i++)
-  {
-    VL6180x_InitData(&Devs[i]);
-    VL6180x_Prepare(&Devs[i]);
-    ///* 调整测量范围
-    VL6180x_SetGroupParamHold(&Devs[i], 1);
-    VL6180x_RangeGetThresholds(&Devs[i], NULL, NULL);
-    VL6180x_UpscaleSetScaling(&Devs[i], 3);
-    VL6180x_RangeSetThresholds(&Devs[i], 0, 600, 0);
-    VL6180x_SetGroupParamHold(&Devs[i], 0);
-    //*/
-    VL6180x_RangePollMeasurement(&Devs[i], &Range[i]);
-    if (Range[i].errorStatus == 0)
-    {
-      printf("range %d: %ld mm\r\n", i + 1, Range[i].range_mm);
-//      HAL_Delay(250);
-    }
-    else
-    {
-      printf("%s\r\n", "error");
-//      HAL_Delay(250);
-    }
-  }
-}
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -314,7 +287,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Sample_SimpleRanging(void)
+{
+  VL6180x_RangeData_t Range[DEVICE_NUMBER];//存储各设备测距值
 
+  int i;
+  for (i = 0; i <= DEVICE_NUMBER - 1; i++)
+  {
+    VL6180x_InitData(&Devs[i]);
+    VL6180x_Prepare(&Devs[i]);
+    ///* 调整测量范围
+    VL6180x_SetGroupParamHold(&Devs[i], 1);
+    VL6180x_RangeGetThresholds(&Devs[i], NULL, NULL);
+    VL6180x_UpscaleSetScaling(&Devs[i], 3);//三倍测量范围
+    VL6180x_RangeSetThresholds(&Devs[i], 0, 600, 0);
+    VL6180x_SetGroupParamHold(&Devs[i], 0);
+    //*/
+    VL6180x_RangePollMeasurement(&Devs[i], &Range[i]);//测距操作
+    if (Range[i].errorStatus == 0)//串口输出
+    {
+      printf("range %d: %ld mm\r\n", i + 1, Range[i].range_mm);
+//      HAL_Delay(250);
+    }
+    else
+    {
+      printf("%s\r\n", "error");
+//      HAL_Delay(250);
+    }
+  }
+}
 /* USER CODE END 4 */
 
 /**

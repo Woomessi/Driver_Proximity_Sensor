@@ -1,6 +1,6 @@
 #include "tca9535.h"
 
-int I2C2_WrByte(uint8_t dev, uint8_t index, uint8_t data){
+int TCA9535_WrByte(uint8_t dev, uint8_t index, uint8_t data){
     int status;
     int a = 5;
     uint8_t *buffer = &a;//初始化指针
@@ -12,7 +12,7 @@ int I2C2_WrByte(uint8_t dev, uint8_t index, uint8_t data){
     return status;
 }
 
-int I2C2_RdByte(uint8_t dev, uint8_t index, uint8_t *data){
+int TCA9535_RdByte(uint8_t dev, uint8_t index, uint8_t *data){
     int status;
     int b = 6;
     uint8_t *buffer = &b;//初始化指针

@@ -22,10 +22,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Core/Inc/vl6180x_api.h ../Core/Inc/vl6180x_platform.h \
- ../Core/Inc/vl6180x_def.h ../Core/Inc/vl6180x_cfg.h \
- ../Core/Inc/vl6180x_types.h ../Core/Inc/bsp_i2c.h ../Core/Inc/bsp_i2c2.h \
- ../Core/Inc/tca9535.h ../Core/Inc/vl6180x_types.h
+ ../Core/Inc/bsp_i2c.h ../Core/Inc/vl6180x_api.h \
+ ../Core/Inc/vl6180x_platform.h ../Core/Inc/vl6180x_def.h \
+ ../Core/Inc/vl6180x_cfg.h ../Core/Inc/vl6180x_types.h \
+ ../Core/Inc/bsp_i2c2.h ../Core/Inc/tca9535.h ../Core/Inc/vl6180x_types.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -50,12 +50,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+../Core/Inc/bsp_i2c.h:
 ../Core/Inc/vl6180x_api.h:
 ../Core/Inc/vl6180x_platform.h:
 ../Core/Inc/vl6180x_def.h:
 ../Core/Inc/vl6180x_cfg.h:
 ../Core/Inc/vl6180x_types.h:
-../Core/Inc/bsp_i2c.h:
 ../Core/Inc/bsp_i2c2.h:
 ../Core/Inc/tca9535.h:
 ../Core/Inc/vl6180x_types.h:

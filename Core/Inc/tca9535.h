@@ -12,9 +12,9 @@
 #define  TCA9535_CONFIG_VAL0      0xE0
 #define  TCA9535_CONFIG_VAL1      0xFB
 
-int I2C2_WrByte(uint8_t dev, uint8_t index, uint8_t data);
+int TCA9535_WrByte(uint8_t dev, uint8_t index, uint8_t data);
 
-int I2C2_RdByte(uint8_t dev, uint8_t index, uint8_t *data);
+int TCA9535_RdByte(uint8_t dev, uint8_t index, uint8_t *data);
 
 int I2C2Write(uint8_t addr, uint8_t *buff, uint8_t len);
 
