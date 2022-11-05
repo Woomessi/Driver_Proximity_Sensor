@@ -1,0 +1,4 @@
+../Core/Src/tca9535.c:3:5:I2C2_WrByte	32	static
+../Core/Src/tca9535.c:15:5:I2C2_RdByte	32	static
+../Core/Src/tca9535.c:33:5:I2C2Write	24	static
+../Core/Src/tca9535.c:64:5:I2C2Read	24	static

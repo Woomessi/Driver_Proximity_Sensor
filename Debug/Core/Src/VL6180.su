@@ -1,0 +1,4 @@
+../Core/Src/VL6180.c:6:9:VL6180X_Read_ID	8	static
+../Core/Src/VL6180.c:14:9:VL6180X_Init	8	static
+../Core/Src/VL6180.c:80:9:VL6180X_Read_Range	16	static
+../Core/Src/VL6180.c:97:7:VL6180X_Read_Lux	24	static

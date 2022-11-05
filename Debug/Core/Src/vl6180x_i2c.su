@@ -1,0 +1,10 @@
+../Core/Src/vl6180x_i2c.c:69:5:VL6180x_WrByte	32	static
+../Core/Src/vl6180x_i2c.c:87:5:VL6180x_WrWord	32	static
+../Core/Src/vl6180x_i2c.c:106:5:VL6180x_WrDWord	40	static
+../Core/Src/vl6180x_i2c.c:127:5:VL6180x_UpdateByte	32	static
+../Core/Src/vl6180x_i2c.c:154:5:VL6180x_RdByte	40	static
+../Core/Src/vl6180x_i2c.c:177:5:VL6180x_RdWord	40	static
+../Core/Src/vl6180x_i2c.c:201:6:VL6180x_RdDWord	40	static
+../Core/Src/vl6180x_i2c.c:226:6:VL6180x_RdMulti	40	static
+../Core/Src/vl6180x_i2c.c:301:5:VL6180x_I2CWrite	32	static
+../Core/Src/vl6180x_i2c.c:332:5:VL6180x_I2CRead	32	static

@@ -1,0 +1,8 @@
+../Core/Src/bsp_i2c2.c:11:13:I2C_Delay2	16	static
+../Core/Src/bsp_i2c2.c:33:6:I2C_Start2	8	static
+../Core/Src/bsp_i2c2.c:51:6:I2C_Stop2	8	static
+../Core/Src/bsp_i2c2.c:66:6:I2C_SendByte2	24	static
+../Core/Src/bsp_i2c2.c:101:9:I2C_ReadByte2	24	static
+../Core/Src/bsp_i2c2.c:132:9:I2C_WaitAck2	16	static
+../Core/Src/bsp_i2c2.c:159:6:I2C_Ack2	8	static
+../Core/Src/bsp_i2c2.c:176:6:I2C_NAck2	8	static
