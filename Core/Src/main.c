@@ -7,7 +7,7 @@
   * @attention
   * Author【作者】: Hongrui Wu【吴宏瑞】
   *
-  * Department【机构】: Xin Wang's Lab in HITSZ
+  * Department【机构】: A405
   *
   * Date【日期】: 2022/11/5/21:30
   ******************************************************************************
@@ -15,7 +15,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"//包含引脚自定义名称等文件
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bsp_i2c.h" //包含软件I2C1底层驱动
@@ -26,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "time.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -125,8 +125,8 @@ int main(void)
 
   int i, id, FinalI2cAddr, status, enabled_port0_pin, enabled_port1_pin;
 //  id = 0;//给id赋初值，保证其地址的正确
-  enabled_port0_pin = 0x00;//表达Port0中要置位的8个引脚，向其8位二进制数中某一位写1，以置位相应引脚
-  enabled_port1_pin = 0x00;//表达Port1中要置位的8个引脚，向其8位二进制数中某一位写1，以置位相应引脚
+  enabled_port0_pin = 0x00;//表达Port0中待置位的8个引脚，向其8位二进制数中某一位写1，即置位相应引脚
+  enabled_port1_pin = 0x00;//表达Port1中待置位的8个引脚，向其8位二进制数中某一位写1，即置位相应引脚
 
   //逐一更新各传感器的地址
   for (i = 0; i <= DEVICE_NUMBER - 1; i++)
@@ -152,6 +152,19 @@ int main(void)
     Devs[i].i2c_dev_addr = FinalI2cAddr;//记录修改后的地址
 //    status = VL6180x_RdByte(&Devs[i], IDENTIFICATION_MODEL_ID, &id);//测试I2C读值是否正常
   }
+  //初始化TOF模块
+  for (i = 0; i <= DEVICE_NUMBER - 1; i++)
+  {
+    VL6180x_InitData(&Devs[i]);
+    VL6180x_Prepare(&Devs[i]);
+//    /* 调整测量范围
+    VL6180x_SetGroupParamHold(&Devs[i], 1);
+    VL6180x_RangeGetThresholds(&Devs[i], NULL, NULL);
+    VL6180x_UpscaleSetScaling(&Devs[i], 3);//三倍测量范围
+    VL6180x_RangeSetThresholds(&Devs[i], 0, 600, 0);
+    VL6180x_SetGroupParamHold(&Devs[i], 0);
+//    */
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -160,6 +173,13 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	Sample_SimpleRanging();//TOF传感器VL6180X的测距函数
+
+//     clock_t start, end;
+//	 start = clock();
+//	 HAL_Delay(1000);
+//	 end = clock();
+//	 double cycle = (double)(end-start);
+//	 printf("cycle: %lf ms\r\n", cycle);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -290,31 +310,23 @@ static void MX_GPIO_Init(void)
 void Sample_SimpleRanging(void)
 {
   VL6180x_RangeData_t Range[DEVICE_NUMBER];//存储各设备测距值
-
-  int i;
-  for (i = 0; i <= DEVICE_NUMBER - 1; i++)
+//  clock_t start, end;
+//  start = clock();
+  for (int i = 0; i <= DEVICE_NUMBER - 1; i++)
   {
-    VL6180x_InitData(&Devs[i]);
-    VL6180x_Prepare(&Devs[i]);
-    ///* 调整测量范围
-    VL6180x_SetGroupParamHold(&Devs[i], 1);
-    VL6180x_RangeGetThresholds(&Devs[i], NULL, NULL);
-    VL6180x_UpscaleSetScaling(&Devs[i], 3);//三倍测量范围
-    VL6180x_RangeSetThresholds(&Devs[i], 0, 600, 0);
-    VL6180x_SetGroupParamHold(&Devs[i], 0);
-    //*/
     VL6180x_RangePollMeasurement(&Devs[i], &Range[i]);//测距操作
     if (Range[i].errorStatus == 0)//串口输出
     {
       printf("range %d: %ld mm\r\n", i + 1, Range[i].range_mm);
-//      HAL_Delay(250);
     }
     else
     {
       printf("%s\r\n", "error");
-//      HAL_Delay(250);
     }
   }
+//  end = clock();
+//  double cycle = (double)(end-start);
+//  printf("cycle: %f ms\r\n", cycle*1000);
 }
 /* USER CODE END 4 */
 

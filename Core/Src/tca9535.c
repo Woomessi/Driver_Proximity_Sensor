@@ -29,7 +29,7 @@ int TCA9535_RdByte(uint8_t dev, uint8_t index, uint8_t *data){
 }
 
 //I2C底层通讯函数选择
-/* VL6180X底层驱动函数：写 */
+/* TCA9535底层驱动函数：写 */
 int I2C2Write(uint8_t addr, uint8_t *buff, uint8_t len)
 {
   int status, i;
@@ -60,7 +60,7 @@ int I2C2Write(uint8_t addr, uint8_t *buff, uint8_t len)
   return status;
 }
 
-/* VL6180X底层驱动函数：读 */
+/* TCA9535底层驱动函数：读 */
 int I2C2Read(uint8_t addr, uint8_t *buff, uint8_t len)
 {
   int status, i;
