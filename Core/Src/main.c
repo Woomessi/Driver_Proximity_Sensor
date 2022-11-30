@@ -173,13 +173,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	Sample_SimpleRanging();//TOF传感器VL6180X的测距函数
-
-//     clock_t start, end;
-//	 start = clock();
-//	 HAL_Delay(1000);
-//	 end = clock();
-//	 double cycle = (double)(end-start);
-//	 printf("cycle: %lf ms\r\n", cycle);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -310,8 +303,7 @@ static void MX_GPIO_Init(void)
 void Sample_SimpleRanging(void)
 {
   VL6180x_RangeData_t Range[DEVICE_NUMBER];//存储各设备测距值
-//  clock_t start, end;
-//  start = clock();
+  uint32_t start = HAL_GetTick();
   for (int i = 0; i <= DEVICE_NUMBER - 1; i++)
   {
     VL6180x_RangePollMeasurement(&Devs[i], &Range[i]);//测距操作
@@ -324,9 +316,9 @@ void Sample_SimpleRanging(void)
       printf("%s\r\n", "error");
     }
   }
-//  end = clock();
-//  double cycle = (double)(end-start);
-//  printf("cycle: %f ms\r\n", cycle*1000);
+  uint32_t end = HAL_GetTick();
+  uint32_t cycle = end - start;
+  printf("cycle: %d ms\r\n", cycle);
 }
 /* USER CODE END 4 */
 
